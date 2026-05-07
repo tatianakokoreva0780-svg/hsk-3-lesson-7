@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>用“半”“刻”“差”表示时间</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #1b245f, #6a3fb5, #0f8b8d);
+      color: #222;
+      overflow: hidden;
+    }
+    .page {
+      max-width: 1050px;
+      height: 100vh;
+      margin: 0 auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      background: rgba(0,0,0,0.18);
+      border-radius: 24px;
+    }
+    .header {
+      background: linear-gradient(135deg, #18237a, #4c6ef5);
+      color: white;
+      border-radius: 18px;
+      padding: 14px 20px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.35);
+      border: 3px solid rgba(255,255,255,.55);
+    }
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.1;
+    }
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .tab-btn {
+      border: 3px solid rgba(255,255,255,.75);
+      border-radius: 16px;
+      padding: 12px;
+      font-size: 24px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: .15s;
+      box-shadow: 0 8px 18px rgba(0,0,0,.22);
+    }
+    .tab-btn:hover { transform: translateY(-1px); }
+    .tab-btn.active { color: white; }
+    .half { background: #dbe4ff; color: #364fc7; }
+    .quarter { background: #fff3bf; color: #b7791f; }
+    .minus { background: #d3f9d8; color: #2b8a3e; }
+    .half.active { background: #4c6ef5; }
+    .quarter.active { background: #f59f00; }
+    .minus.active { background: #37b24d; }
+
+    .tab {
+      display: none;
+      flex: 1;
+      min-height: 0;
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 18px 42px rgba(0,0,0,.42);
+      overflow: hidden;
+      border: 4px solid rgba(255,255,255,.68);
+    }
+    .tab.active {
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      gap: 18px;
+    }
+    #tab-half { background: linear-gradient(135deg, #dbe4ff, #f8f9ff); border-color: #748ffc; }
+    #tab-quarter { background: linear-gradient(135deg, #fff3bf, #fffaf0); border-color: #f59f00; }
+    #tab-minus { background: linear-gradient(135deg, #d3f9d8, #f3fff5); border-color: #37b24d; }
+
+    .rule, .examples {
+      background: rgba(255,255,255,0.98);
+      border-radius: 22px;
+      padding: 18px;
+      overflow: auto;
+      border: 4px solid rgba(54,79,199,0.38);
+      box-shadow:
+        0 14px 32px rgba(0,0,0,0.32),
+        inset 0 0 0 2px rgba(255,255,255,0.85);
+    }
+    .big-symbol {
+      font-size: 90px;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    #tab-half .big-symbol { color: #4c6ef5; }
+    #tab-quarter .big-symbol { color: #f59f00; }
+    #tab-minus .big-symbol { color: #37b24d; }
+
+    .formula {
+      font-size: 31px;
+      font-weight: 900;
+      text-align: center;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 16px 10px;
+      margin-bottom: 14px;
+      line-height: 1.35;
+      border: 4px solid rgba(0,0,0,.14);
+      box-shadow: 0 8px 18px rgba(0,0,0,.16);
+    }
+    .note {
+      font-size: 23px;
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.45;
+    }
+    .examples h2 {
+      margin: 0 0 12px;
+      font-size: 28px;
+      text-align: center;
+    }
+    .example-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .example {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 14px;
+      text-align: center;
+      border: 3px solid rgba(0,0,0,.13);
+      box-shadow: 0 8px 18px rgba(0,0,0,.14);
+    }
+    .time {
+      font-size: 24px;
+      font-weight: 900;
+      opacity: .72;
+      margin-bottom: 4px;
+    }
+    .cn {
+      font-size: 32px;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+    .wide { grid-column: span 2; }
+
+    @media print {
+      html, body { height: auto; overflow: visible; background: white; }
+      .page { height: auto; max-width: none; }
+      .tabs { display: none; }
+      .tab { display: grid !important; page-break-inside: avoid; margin-bottom: 10px; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <h1>用“半”“刻”“差”表示时间</h1>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab-btn half active" onclick="openTab(event, 'tab-half')">半</button>
+      <button class="tab-btn quarter" onclick="openTab(event, 'tab-quarter')">刻</button>
+      <button class="tab-btn minus" onclick="openTab(event, 'tab-minus')">差</button>
+    </nav>
+
+    <section id="tab-half" class="tab active">
+      <div class="rule">
+        <div class="big-symbol">半</div>
+        <div class="formula">数字 + 点 + 半</div>
+        <div class="note">半 = 三十分钟</div>
+      </div>
+      <div class="examples">
+        <h2>例子</h2>
+        <div class="example-grid">
+          <div class="example">
+            <div class="time">1:30</div>
+            <div class="cn">一点半</div>
+          </div>
+          <div class="example">
+            <div class="time">10:30</div>
+            <div class="cn">十点半</div>
+          </div>
+          <div class="example">
+            <div class="time">6:30</div>
+            <div class="cn">六点半</div>
+          </div>
+          <div class="example">
+            <div class="time">12:30</div>
+            <div class="cn">十二点半</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-quarter" class="tab">
+      <div class="rule">
+        <div class="big-symbol">刻</div>
+        <div class="formula">数字 + 点 + 一刻</div>
+        <div class="formula">数字 + 点 + 三刻</div>
+        <div class="note">一刻 = 十五分钟<br>三刻 = 四十五分钟</div>
+      </div>
+      <div class="examples">
+        <h2>例子</h2>
+        <div class="example-grid">
+          <div class="example">
+            <div class="time">12:15</div>
+            <div class="cn">十二点一刻</div>
+          </div>
+          <div class="example">
+            <div class="time">12:45</div>
+            <div class="cn">十二点三刻</div>
+          </div>
+          <div class="example">
+            <div class="time">3:15</div>
+            <div class="cn">三点一刻</div>
+          </div>
+          <div class="example">
+            <div class="time">5:45</div>
+            <div class="cn">五点三刻</div>
+          </div>
+          <div class="example wide">
+            <div class="time">一刻钟</div>
+            <div class="cn">十五分钟</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-minus" class="tab">
+      <div class="rule">
+        <div class="big-symbol">差</div>
+        <div class="formula">差 + 分钟 + 下一个小时</div>
+        <div class="formula">差 + 一刻 + 下一个小时</div>
+        <div class="note">差 = 还差……到下一个时间</div>
+      </div>
+      <div class="examples">
+        <h2>例子</h2>
+        <div class="example-grid">
+          <div class="example">
+            <div class="time">11:55</div>
+            <div class="cn">差五分十二点</div>
+          </div>
+          <div class="example">
+            <div class="time">12:45</div>
+            <div class="cn">差一刻一点</div>
+          </div>
+          <div class="example">
+            <div class="time">8:50</div>
+            <div class="cn">差十分九点</div>
+          </div>
+          <div class="example">
+            <div class="time">6:55</div>
+            <div class="cn">差五分七点</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+<script>
+  function openTab(event, id) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+</script>
+</body>
+</html>
